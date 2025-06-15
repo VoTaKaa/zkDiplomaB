@@ -39,6 +39,31 @@ The system uses Merkle trees and zero-knowledge proofs to verify the authenticit
 - Merkle tree structure for efficient verification
 - Poseidon hash function for cryptographic security
 
+## Experimental Results
+
+### Circuit Constraints
+- Total number of constraints: 1,507 (non-linear constraints)
+- Template instances: 148
+- Linear constraints: 0
+- Public inputs: 1
+- Private inputs: 14
+- Total wires: 1,522
+
+### Performance Metrics
+
+#### Proof Generation
+- Average time: ~1.081 seconds
+- Name hashing: ~0.335 seconds
+- Proof generation: ~0.747 seconds
+
+#### Blockchain Verification
+- Sepolia: Higher gas costs, longer verification time
+- ZkSync: Lower gas costs, faster verification time
+
+### Memory Usage
+- Peak memory usage during proof generation: ~2.5GB
+- Average memory usage: ~1.8GB
+
 ## Setup and Installation
 
 1. Install dependencies:

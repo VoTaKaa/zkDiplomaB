@@ -105,4 +105,21 @@ MIT License
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request. 
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+### Deployed Contracts
+
+#### Sepolia Testnet
+- Contract Address: `0x3D11895D0BB719AcF7B0D995ED19953388318B82`
+
+#### ZkSync Sepolia Testnet
+- Contract Address: `0x3D11895D0BB719AcF7B0D995ED19953388318B82`
+
+### Circuit Constraints
+
+- Total number of constraints: 1,507 (non-linear constraints)
+- Template instances: 148
+- Linear constraints: 0
+- Public inputs: 1
+- Private inputs: 14
+- Total wires: 1,522 

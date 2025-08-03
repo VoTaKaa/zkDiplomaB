@@ -37,6 +37,7 @@ export const generateProof = async (wallet_address, diploma_id) => {
       `${URL}/holder/${wallet_address}/diplomas/${diploma_id}/proof`,
       {}
     );
+    console.log(response.data);
     return response.data;
   } catch (error) {
     return {

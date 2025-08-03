@@ -54,8 +54,59 @@ function Login() {
       const currentAccount = accounts[0];
       console.log("Account selected:", currentAccount);
 
-      // Get provider and signer
+      // Get provider and check network
       const provider = new ethers.BrowserProvider(window.ethereum);
+      const network = await provider.getNetwork();
+
+      // Kiểm tra và chuyển đổi mạng nếu cần
+      const requiredChainId = process.env.REACT_APP_CHAIN_ID || "0xaa36a7"; // Sepolia
+      const currentChainId = "0x" + network.chainId.toString(16);
+
+      console.log("Current network:", network.name, currentChainId);
+      console.log("Required network:", requiredChainId);
+
+      if (currentChainId !== requiredChainId) {
+        try {
+          // Yêu cầu chuyển đổi mạng
+          await window.ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: requiredChainId }],
+          });
+        } catch (switchError) {
+          // Nếu mạng chưa được thêm vào MetaMask, thêm mạng mới
+          if (switchError.code === 4902) {
+            try {
+              await window.ethereum.request({
+                method: "wallet_addEthereumChain",
+                params: [
+                  {
+                    chainId: requiredChainId,
+                    chainName: process.env.REACT_APP_CHAIN_NAME || "Sepolia",
+                    rpcUrls: [
+                      process.env.REACT_APP_RPC_URL ||
+                        "https://ethereum-sepolia-rpc.publicnode.com",
+                    ],
+                    blockExplorerUrls: [
+                      process.env.REACT_APP_BLOCK_EXPLORER ||
+                        "https://sepolia.etherscan.io/",
+                    ],
+                    nativeCurrency: {
+                      name: "ETH",
+                      symbol: "ETH",
+                      decimals: 18,
+                    },
+                  },
+                ],
+              });
+            } catch (addError) {
+              throw new Error("Không thể thêm mạng Sepolia vào MetaMask");
+            }
+          } else {
+            throw new Error("Vui lòng chuyển đổi MetaMask sang mạng Sepolia");
+          }
+        }
+      }
+
       const signer = await provider.getSigner();
 
       // Create message to sign

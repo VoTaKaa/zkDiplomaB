@@ -22,7 +22,7 @@ import {
   checkRootValidity,
 } from "../../services/blockchain.service.js";
 import Swal from "sweetalert2";
-import { ethers } from "ethers";
+import { ethers, AbiCoder } from "ethers";
 
 const Verified = () => {
   const [proofs, setProofs] = useState([]);

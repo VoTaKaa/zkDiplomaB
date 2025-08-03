@@ -1,21 +1,40 @@
-import { ethers } from "ethers";
+import { ethers, AbiCoder } from "ethers";
 import axios from "axios";
 const URL = process.env.REACT_APP_API_URL || "http://localhost:5001/api";
 
+// Utility function to check and switch network
+const ensureCorrectNetwork = async (provider) => {
+  const network = await provider.getNetwork();
+  const requiredChainId = parseInt(
+    process.env.REACT_APP_CHAIN_ID || "0xaa36a7",
+    16
+  );
+
+  if (network.chainId !== BigInt(requiredChainId)) {
+    const chainName = process.env.REACT_APP_CHAIN_NAME || "Sepolia";
+    throw new Error(
+      `Vui lòng chuyển MetaMask sang mạng ${chainName} (Chain ID: ${
+        process.env.REACT_APP_CHAIN_ID || "0xaa36a7"
+      })`
+    );
+  }
+};
+
+// Export function to get network info for UI
+export const getNetworkInfo = () => {
+  return {
+    chainId: process.env.REACT_APP_CHAIN_ID || "0xaa36a7",
+    chainName: process.env.REACT_APP_CHAIN_NAME || "Sepolia",
+    rpcUrl:
+      process.env.REACT_APP_RPC_URL ||
+      "https://ethereum-sepolia-rpc.publicnode.com",
+    blockExplorer:
+      process.env.REACT_APP_BLOCK_EXPLORER || "https://sepolia.etherscan.io/",
+    contractAddress: process.env.REACT_APP_DIPLOMA_MANAGER_ADDRESS,
+  };
+};
+
 const contractDiplomaABI = [
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_root",
-        type: "uint256",
-      },
-    ],
-    name: "addRoot",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
   {
     inputs: [
       {
@@ -56,24 +75,13 @@ const contractDiplomaABI = [
   {
     inputs: [
       {
-        internalType: "bytes",
-        name: "proofs",
-        type: "bytes",
-      },
-      {
         internalType: "uint256",
-        name: "input",
+        name: "_root",
         type: "uint256",
       },
     ],
-    name: "verifyDiploma",
-    outputs: [
-      {
-        internalType: "bool",
-        name: "",
-        type: "bool",
-      },
-    ],
+    name: "addRoot",
+    outputs: [],
     stateMutability: "nonpayable",
     type: "function",
   },
@@ -128,7 +136,52 @@ const contractDiplomaABI = [
     stateMutability: "view",
     type: "function",
   },
+  {
+    inputs: [
+      {
+        internalType: "uint256[2]",
+        name: "a",
+        type: "uint256[2]",
+      },
+      {
+        internalType: "uint256[2][2]",
+        name: "b",
+        type: "uint256[2][2]",
+      },
+      {
+        internalType: "uint256[2]",
+        name: "c",
+        type: "uint256[2]",
+      },
+      {
+        internalType: "uint256[1]",
+        name: "input",
+        type: "uint256[1]",
+      },
+    ],
+    name: "verifyDiploma",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
 ];
+
+// Hàm chuyển đổi BigInt sang hex
+export const bigIntToHex = (bigIntValue) => {
+  // Convert BigInt to hex string with 0x prefix
+  return "0x" + BigInt(bigIntValue).toString(16);
+};
+
+// Hàm chuyển đổi hex sang BigInt
+export const hexToBigInt = (hexValue) => {
+  return BigInt(hexValue);
+};
 
 export const addRoot = async ({ root }) => {
   try {
@@ -136,6 +189,7 @@ export const addRoot = async ({ root }) => {
       throw new Error("MetaMask chưa được cài đặt");
     }
     const provider = new ethers.BrowserProvider(window.ethereum);
+    await ensureCorrectNetwork(provider);
     const signer = await provider.getSigner();
     const contractAddress = process.env.REACT_APP_DIPLOMA_MANAGER_ADDRESS;
 
@@ -176,6 +230,7 @@ export const verifyProof = async ({ proof, root }) => {
       throw new Error("MetaMask chưa được cài đặt");
     }
     const provider = new ethers.BrowserProvider(window.ethereum);
+    await ensureCorrectNetwork(provider);
     const signer = await provider.getSigner();
     const contractAddress = process.env.REACT_APP_DIPLOMA_MANAGER_ADDRESS;
 
@@ -198,8 +253,21 @@ export const verifyProof = async ({ proof, root }) => {
       };
     }
 
+    const a = [proof[0][0].toString(), proof[0][1].toString()];
+    const b = [
+      [proof[1][0][0].toString(), proof[1][0][1].toString()],
+      [proof[1][1][0].toString(), proof[1][1][1].toString()],
+    ];
+    const c = [proof[2][0].toString(), proof[2][1].toString()];
+    const input = [root.toString()];
+
+    console.log("a:", a);
+    console.log("b:", b);
+    console.log("c:", c);
+    console.log("input:", input);
+
     // Proceed with verification
-    const tx = await contract.verifyDiploma(proof, root);
+    const tx = await contract.verifyDiploma(a, b, c, input);
     const receipt = await tx.wait();
 
     // Check for DiplomaVerified event
@@ -234,6 +302,7 @@ export const checkRootValidity = async (root) => {
       throw new Error("MetaMask chưa được cài đặt");
     }
     const provider = new ethers.BrowserProvider(window.ethereum);
+    await ensureCorrectNetwork(provider);
     const contractAddress = process.env.REACT_APP_DIPLOMA_MANAGER_ADDRESS;
 
     if (!contractAddress) {
@@ -247,6 +316,8 @@ export const checkRootValidity = async (root) => {
     );
 
     const isValid = await contract.isValidRoot(root);
+    console.log("VALID ROOT", root, isValid);
+
     return {
       success: true,
       isValid,

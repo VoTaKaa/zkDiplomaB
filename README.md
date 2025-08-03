@@ -92,11 +92,7 @@ Frontend sẽ chạy tại: `http://localhost:3000`
 
 ## 🔗 Smart Contract
 
-Địa chỉ contracts trên Holesky Testnet: `0x6d307F480f08dDa1475339771a77E984522AC9F8`
-
-Contract đã được deploy trên Holesky Testnet và có thể được xem tại:
-**[BẤM VÔ ĐÂY ĐI](https://holesky.etherscan.io/address/0x6d307F480f08dDa1475339771a77E984522AC9F8)**
-
+Địa chỉ contracts trên Sepolia Testnet: `0x3D11895D0BB719AcF7B0D995ED19953388318B82`
 
 ## 📁 Cấu trúc dữ liệu
 

@@ -61,6 +61,7 @@ const generateProofOfHoldership = async (wallet_address, diploma_id) => {
         "Diploma not found or does not belong to this wallet address"
       );
     }
+    console.log("Diploma: ", diploma);
 
     // Lấy thông tin processed diploma
     const processedDiploma = await ProcessedDiploma.findOne({
@@ -69,6 +70,7 @@ const generateProofOfHoldership = async (wallet_address, diploma_id) => {
     if (!processedDiploma) {
       throw new Error("Processed diploma not found");
     }
+    console.log("Processed Diploma: ", processedDiploma);
 
     // Lấy thông tin merkle tree và proof
     const merkleTree = await MerkleTree.findOne({
@@ -78,6 +80,7 @@ const generateProofOfHoldership = async (wallet_address, diploma_id) => {
     if (!merkleTree) {
       throw new Error("Merkle tree not found");
     }
+    console.log("Merkle Tree: ", merkleTree);
 
     // Tìm proof tương ứng với leaf hash của diploma
     const proof = merkleTree.proofs.find(
@@ -86,6 +89,8 @@ const generateProofOfHoldership = async (wallet_address, diploma_id) => {
     if (!proof) {
       throw new Error("Proof not found for this diploma");
     }
+
+    console.log("Proof: ", proof);
 
     const data = {
       nameHash: processedDiploma.nameHash,
@@ -97,11 +102,14 @@ const generateProofOfHoldership = async (wallet_address, diploma_id) => {
       siblings: proof.siblings,
     };
 
-    const finalProof = await generateProof(data);
+    console.log("Data: ", data);
+    const dataInput = await generateProof(data);
+
+    console.log("Data Input: ", dataInput);
 
     // Format dữ liệu theo yêu cầu
     return {
-      proof: finalProof,
+      proof: dataInput,
       root: merkleTree.root,
     };
   } catch (error) {
@@ -130,6 +138,8 @@ const submitProofOfHoldership = async (
       proof,
       root,
     });
+
+    console.log("Submitted Proof: ", submittedProof);
 
     return submittedProof;
   } catch (error) {

@@ -5,6 +5,8 @@ const ProcessedDiploma = require("../models/processed_diploma.model.js");
 const MerkleTree = require("../models/merkle_tree.model.js");
 
 const createDiplomasService = async (diplomas) => {
+  const startCreateDiplomas = Date.now();
+
   const processedData = await prepareDiplomaData(diplomas);
   const merkleData = await createMerkleTree(processedData);
 
@@ -38,6 +40,13 @@ const createDiplomasService = async (diplomas) => {
       issueDate: data.issueDate,
       leafHash: data.leafHash,
     }))
+  );
+
+  const endCreateDiplomas = Date.now();
+  console.log(
+    `Time taken to create diplomas: ${
+      endCreateDiplomas - startCreateDiplomas
+    }ms`
   );
 
   return {

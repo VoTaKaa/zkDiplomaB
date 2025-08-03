@@ -1,5 +1,5 @@
 const { groth16 } = require("snarkjs");
-const wc = require("./zk_calculator/witness_calculator.js");
+const wc = require("./zk_calculator/v1/witness_calculator.js");
 const fs = require("fs");
 const { AbiCoder } = require("ethers");
 const path = require("path");
@@ -180,38 +180,55 @@ async function createMerkleTree(processedData) {
 
 //Tạo proof để  gửi cho verifier
 async function generateProof(merkleTreeData) {
+  console.log("Toi day 1");
   // build witness calculator with webassembly
   const buffer = fs.readFileSync(
-    path.join(__dirname, "zk_calculator", "DiplomaVerifier.wasm")
+    path.join(__dirname, "zk_calculator", "v1", "DiplomaVerifier.wasm")
   );
   const witnessCalculator = await wc(buffer);
-
+  console.log("Toi day 3");
   const witnessFile = await witnessCalculator.calculateWTNSBin(
     merkleTreeData,
     0
   );
+  console.log("Toi day 2");
 
   const zKeyFile = fs.readFileSync(
-    path.join(__dirname, "zk_calculator", "DiplomaVerifier_final.zkey")
+    path.join(__dirname, "zk_calculator", "v1", "DiplomaVerifier_0001.zkey")
   );
 
   const { proof, publicSignals } = await groth16.prove(zKeyFile, witnessFile);
+  console.log("Proof: ", proof);
+  console.log("Public Signals: ", publicSignals);
 
-  const dataStr = await groth16.exportSolidityCallData(proof, publicSignals);
-  const data = JSON.parse("[" + dataStr + "]");
-  console.log("Data: ", data);
+  const proofForContract = [
+    [proof.pi_a[0], proof.pi_a[1]],
+    [
+      [proof.pi_b[0][1], proof.pi_b[0][0]],
+      [proof.pi_b[1][1], proof.pi_b[1][0]],
+    ],
+    [proof.pi_c[0], proof.pi_c[1]],
+  ];
+
+  const dataInput = proofForContract.concat(publicSignals);
+  console.log("Data Input: ", dataInput);
+
+  // const dataStr = await groth16.exportSolidityCallData(proof, publicSignals);
+  // const dataInput = JSON.parse("[" + dataStr + "]");
+  // console.log("DataStr: ", dataStr);
 
   const abiCoder = new AbiCoder();
 
-  const bytes = abiCoder.encode(
-    ["uint256[2]", "uint256[2][2]", "uint256[2]"],
-    [data[0], data[1], data[2]]
-  );
+  // const bytes = abiCoder.encode(
+  //   ["uint256[2]", "uint256[2][2]", "uint256[2]"],
+  //   [dataInput[0], dataInput[1], dataInput[2]]
+  // );
 
-  console.log("Solidity Calldata");
-  console.log("proof: " + bytes);
+  // console.log("Solidity Calldata");
+  // console.log("proof: " + bytes);
 
-  return bytes;
+  // return { bytes, dataInput };
+  return dataInput;
 }
 
 module.exports = {
